@@ -34,13 +34,15 @@ async function createNewPost(title, text, authorId) {
 };
 
 async function updatePostById(title, text, id) {
-    await prisma.post.update({
+    const post = await prisma.post.update({
         where: { id: id },
         data: {
             title: title,
             text: text,
         },
     });
+
+    return post;
 };
 
 async function deletePostById(id) {

@@ -4,6 +4,7 @@ import Blogs from './components/Blogs';
 import NewBlogForm from './components/NewBlogForm';
 import NewUserForm from './components/NewUserForm';
 import UpdateUserForm from './components/UpdateUserForm';
+import UpdateBlogForm from './components/UpdateBlogForm';
 
 const routes = [
     {
@@ -30,6 +31,10 @@ const routes = [
         path: '/blogs/new',
         element: <NewBlogForm />
     },
+    {
+        path: '/blogs/update',
+        element: <UpdateBlogForm />
+    }
 ];
 
 export default routes;

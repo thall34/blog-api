@@ -53,6 +53,7 @@ async function updatePost(req, res, next) {
     try {
         const { title, text } = req.body;
         const updatedPost = await db.updatePostById(title, text, id);
+        console.log(updatedPost)
 
         res.status(200).json(updatedPost);
     } catch(err) {

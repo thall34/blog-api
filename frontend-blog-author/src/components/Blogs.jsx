@@ -30,6 +30,38 @@ function Blogs() {
     }
   }
 
+  async function deletePost(postId) {
+    const token = localStorage.getItem('token');
+
+    if (!token) return;
+
+        try {
+          const response = await fetch(`http://localhost:3000/api/posts/${postId}`, 
+            { 
+                method: 'DELETE',
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+            },
+        );
+    
+          if (!response.ok) {
+            return null;
+          }
+
+          setBlogs((prevBlogs) => {
+            return prevBlogs.filter((blog) => blog.id !== postId)
+          })
+
+          if (response.status === 204) {
+            return true;
+          };
+          
+        } catch (err) {
+          console.error(err);
+        }
+  }
+
   useEffect(() => {
     async function checkAuthorization() {
         const user = await getCurrentUser();
@@ -50,7 +82,13 @@ function Blogs() {
                 {(blogs.length > 0) ? (
                     <>
                     {blogs.map((blog) => (
-                       <h1 key={blog.id}>{blog.title}</h1> 
+                      <div key={blog.id}>
+                       <h1>{blog.title}</h1>
+                       <Link to='/blogs/update' state={{ blogId: blog.id }}>
+                          <button>Update Blog</button>
+                       </Link>
+                       <button onClick={() => deletePost(blog.id)}>Delete Blog</button>
+                      </div>
                     ))}
                     </>
                 ) : (
@@ -59,8 +97,8 @@ function Blogs() {
                     </>
                 )}
                 <Link to='/blogs/new'>
-                            <button>Create New Blog Post</button>
-                        </Link>  
+                    <button>Create New Blog Post</button>
+                </Link> 
                 <Link to='/user'>
                     <button>Go Back to User Dashboard</button>
                 </Link>
