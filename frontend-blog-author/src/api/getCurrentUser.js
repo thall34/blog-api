@@ -1,5 +1,3 @@
-import authHeader from "./authHeader";
-
 async function getCurrentUser() {
     const token = localStorage.getItem('token');
 
@@ -9,7 +7,9 @@ async function getCurrentUser() {
       const response = await fetch(
         'http://localhost:3000/api/users/me',
         {
-          headers: authHeader()
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 

@@ -30,12 +30,14 @@ function NewBlogForm() {
 
     const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem('token');
 
     try {
       const response = await fetch(`http://localhost:3000/api/posts/${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(blogData),
       });

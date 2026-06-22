@@ -45,13 +45,18 @@ async function createUser(req, res, next) {
 // ensure once bcrypt is added to not send back the encrypted password
 async function updateUser(req, res, next) {
     const id = req.validatedId;
+    const user = await db.getUserById(id);
 
     try {
-        const { username, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const updatedUser = await db.updateUserById(username, hashedPassword, id);
-
-        res.status(200).json(updatedUser);
+        const { username } = req.body;
+        if (req.body.password !== '') {
+            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+            const updatedUser = await db.updateUserById(username, hashedPassword, id);
+            res.status(200).json(updatedUser);
+        } else {
+            const updatedUser = await db.updateUserById(username, user.password, id);
+            res.status(200).json(updatedUser);
+        }
     } catch(err) {
         next(err);
     };

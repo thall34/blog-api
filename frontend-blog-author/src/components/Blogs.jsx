@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import getCurrentUser from '../api/getCurrentUser';
-import authHeader from '../api/authHeader';
 
 function Blogs() {
   const [user, setUser] = useState(null);
@@ -14,7 +13,9 @@ function Blogs() {
 
     try {
       const response = await fetch('http://localhost:3000/api/posts/all', {
-        headers: authHeader(),
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
       }
     );
 
