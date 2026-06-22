@@ -10,7 +10,7 @@ async function getAllPosts(req, res, next) {
         //     return next(error)
         // };
 
-        res.json(posts)
+        res.status(200).json(posts);
     } catch(err) {
         next(err)
     };
@@ -28,7 +28,7 @@ async function getPost(req, res, next) {
             return next(error)
         };
 
-        res.json(post);
+        res.status(200).json(post);
     } catch(err) {
         next(err)
     };

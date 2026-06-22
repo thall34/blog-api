@@ -23,23 +23,40 @@ async function getUserById(id) {
     return user;
 };
 
+async function getUserByName(name) {
+    const user = await prisma.user.findUnique({
+        where: { username: name },
+        include: {
+            posts: true,
+            comments: true,
+        },
+    });
+
+    return user;
+};
+
 async function createNewUser(username, password) {
-    await prisma.user.create({
+    const user = await prisma.user.create({
         data: {
             username: username,
             password: password,
         },
     });
+
+    return user;
 };
 
+// ensure once bcrypt is added to not return a hashed password
 async function updateUserById(username, password, id) {
-    await prisma.user.update({
+    const user = await prisma.user.update({
         where: { id: id },
         data: {
             username: username,
             password: password,
         },
     });
+
+    return user;
 };
 
 async function deleteUserById(id) {
@@ -51,6 +68,7 @@ async function deleteUserById(id) {
 module.exports = {
     getAllUsers,
     getUserById,
+    getUserByName,
     createNewUser,
     updateUserById,
     deleteUserById,

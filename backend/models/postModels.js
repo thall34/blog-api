@@ -22,13 +22,15 @@ async function getPostById(id) {
 };
 
 async function createNewPost(title, text, authorId) {
-    await prisma.post.create({
+    const post = await prisma.post.create({
         data: {
             title: title,
             text: text,
             authorId: authorId,
         },
     });
+
+    return post;
 };
 
 async function updatePostById(title, text, id) {
@@ -48,6 +50,7 @@ async function deletePostById(id) {
 };
 
 module.exports = {
+    getAllPosts,
     getPostById,
     createNewPost,
     updatePostById,

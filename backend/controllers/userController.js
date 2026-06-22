@@ -1,14 +1,10 @@
 const db = require('../models/userModels');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 async function getAllUsers(req, res, next) {
     try {
         const users = await db.getAllUsers();
-
-        // if (!users || users.length === 0) {
-        //     const error = new Error ('Failed to Fetch Users');
-        //     error.status = 404;
-        //     return next(error)
-        // };
 
         res.json(users)
     } catch(err) {
@@ -16,7 +12,7 @@ async function getAllUsers(req, res, next) {
     };
 };
 
-async function getUser(req, res, next) {
+async function getUserById(req, res, next) {
     const id = req.validatedId;
 
     try {
@@ -37,7 +33,8 @@ async function getUser(req, res, next) {
 async function createUser(req, res, next) {
     try {
         const { username, password } = req.body;
-        const newUser = await db.createNewUser(username, password);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await db.createNewUser(username, hashedPassword);
 
         res.status(200).json(newUser);
     } catch(err) {
@@ -45,12 +42,14 @@ async function createUser(req, res, next) {
     };
 };
 
+// ensure once bcrypt is added to not send back the encrypted password
 async function updateUser(req, res, next) {
     const id = req.validatedId;
 
     try {
         const { username, password } = req.body;
-        const updatedUser = await db.updateUserById(username, password, id);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const updatedUser = await db.updateUserById(username, hashedPassword, id);
 
         res.status(200).json(updatedUser);
     } catch(err) {
@@ -64,16 +63,60 @@ async function deleteUser(req, res, next) {
     try {
         const deletedUser = await db.deleteUserById(id);
 
-        res.status(200).json(deletedUser);
+        res.sendStatus(204);
     } catch(err) {
         next(err);
     };
 };
 
+async function authenticateLogin(req, res, next) {
+    try {
+        const { username, password } = req.body;
+        const user = await db.getUserByName(username);
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return next(new Error('Incorrect Password'));
+        };
+
+        const token = jwt.sign(
+            {
+                id: user.id,
+                username: user.username,
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: '1h',
+            },
+        );
+
+        res.json({ 
+            token,
+            user: {
+                id: user.id,
+                username: user.username,
+            }, 
+        });
+    } catch(err) {
+        next(err)
+    };
+};
+
+async function sendUserDetails(req, res, next) {
+    try {
+        res.json(req.user);
+    } catch(err) {
+        next(err)
+    };
+};
+
 module.exports = {
     getAllUsers,
-    getUser,
+    getUserById,
     createUser,
     updateUser,
     deleteUser,
+    authenticateLogin,
+    sendUserDetails,
 };
