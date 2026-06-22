@@ -4,6 +4,11 @@ async function getAllPosts(id) {
     const posts = await prisma.post.findMany({
         include: {
             comments: true,
+            user: {
+                select: {
+                    username: true,
+                }
+            },
         },
     });
 

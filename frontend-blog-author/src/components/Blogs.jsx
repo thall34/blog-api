@@ -62,18 +62,17 @@ function Blogs() {
         }
   }
 
-  useEffect(() => {
-    async function checkAuthorization() {
+  async function checkAuthorization() {
         const user = await getCurrentUser();
         setUser(user)
-    }
-
-    checkAuthorization();
-  }, []);
+  }
 
   useEffect(() => {
-    getAllBlogs()
+    checkAuthorization();
+    getAllBlogs();
   }, []);
+
+  console.log(blogs)
 
   return (
     <div>
@@ -84,6 +83,8 @@ function Blogs() {
                     {blogs.map((blog) => (
                       <div key={blog.id}>
                        <h1>{blog.title}</h1>
+                       <h3>Author: {blog.user.username}</h3>
+                       <p>{blog.text}</p>
                        <Link to='/blogs/update' state={{ blogId: blog.id }}>
                           <button>Update Blog</button>
                        </Link>
