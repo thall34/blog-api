@@ -46,7 +46,6 @@ async function createNewUser(username, password) {
     return user;
 };
 
-// ensure once bcrypt is added to not return a hashed password
 async function updateUserById(username, password, id) {
     const user = await prisma.user.update({
         where: { id: id },

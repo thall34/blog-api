@@ -6,6 +6,13 @@ async function getAllUsers(req, res, next) {
     try {
         const users = await db.getAllUsers();
 
+        // React frontend will handle this by having an on screen message
+        // if (users.length === 0) {
+        //     const error = new Error ('No Users Found');
+        //     error.status = 404;
+        //     return next(error)
+        // };
+
         res.json(users)
     } catch(err) {
         next(err)
@@ -42,7 +49,6 @@ async function createUser(req, res, next) {
     };
 };
 
-// ensure once bcrypt is added to not send back the encrypted password
 async function updateUser(req, res, next) {
     const id = req.validatedId;
     const user = await db.getUserById(id);
@@ -58,6 +64,12 @@ async function updateUser(req, res, next) {
             res.status(200).json(updatedUser);
         }
     } catch(err) {
+        if (err.code === 'P2025') {
+            const error = new Error('Comment Not Found');
+            error.status = 404;
+            return next(error);
+        };
+
         next(err);
     };
 };
@@ -70,6 +82,12 @@ async function deleteUser(req, res, next) {
 
         res.sendStatus(204);
     } catch(err) {
+        if (err.code === 'P2025') {
+            const error = new Error('Comment Not Found');
+            error.status = 404;
+            return next(error);
+        };
+
         next(err);
     };
 };
@@ -79,10 +97,18 @@ async function authenticateLogin(req, res, next) {
         const { username, password } = req.body;
         const user = await db.getUserByName(username);
 
+        if (!user) {
+            const error = new Error ('Failed to Fetch User');
+            error.status = 404;
+            return next(error)
+        };
+
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            return next(new Error('Incorrect Password'));
+            const error = new Error ('Incorrect Password');
+            error.status = 401;
+            return next(error);
         };
 
         const token = jwt.sign(

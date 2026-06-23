@@ -1,13 +1,13 @@
 function errorHandler(err, req, res, next) {
     console.error(err);
 
-    // postSQL Database errors
-    if(err.code) {
-        return res.status(500).json({ error: 'Database Error Occurred' });
-    };
+    const statusCode = err.statusCode || 500;
+    const message = err.message || 'Server Error Occurred';
 
-    // fallback to catch all errors
-    return res.status(500).json({ error: 'Server Error Occurred' });
+    res.status(statusCode).json({
+        status: 'error',
+        message: message,
+    });
 };
 
 module.exports = errorHandler;

@@ -5,13 +5,14 @@ async function getAllCommentsByBlogId(req, res, next) {
     try {
         const comments = await db.getAllCommentsByBlogId(id);
 
-        // if (!comments || comments.length === 0) {
-        //     const error = new Error ('Failed to Fetch Comments');
+        // React frontend will handle this by having an on screen message
+        // if (comments.length === 0) {
+        //     const error = new Error ('No Comments Found');
         //     error.status = 404;
         //     return next(error)
         // };
 
-        res.json(comments)
+        res.status(200).json(comments)
     } catch(err) {
         next(err)
     };
@@ -29,7 +30,7 @@ async function getComment(req, res, next) {
             return next(error)
         };
 
-        res.json(comment);
+        res.status(200).json(comment);
     } catch(err) {
         next(err)
     };
@@ -58,6 +59,12 @@ async function updateComment(req, res, next) {
 
         res.status(200).json(updatedComment);
     } catch(err) {
+        if (err.code === 'P2025') {
+            const error = new Error('Comment Not Found');
+            error.status = 404;
+            return next(error);
+        };
+
         next(err);
     };
 };
@@ -70,6 +77,12 @@ async function deleteComment(req, res, next) {
 
         res.sendStatus(204);
     } catch(err) {
+        if (err.code === 'P2025') {
+            const error = new Error('Comment Not Found');
+            error.status = 404;
+            return next(error);
+        };
+
         next(err);
     };
 };

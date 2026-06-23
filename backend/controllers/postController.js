@@ -4,8 +4,9 @@ async function getAllPosts(req, res, next) {
     try {
         const posts = await db.getAllPosts();
 
-        // if (!posts || posts.length === 0) {
-        //     const error = new Error ('Failed to Fetch Posts');
+        // React frontend will handle this by having an on screen message
+        // if (posts.length === 0) {
+        //     const error = new Error ('No Posts Found');
         //     error.status = 404;
         //     return next(error)
         // };
@@ -35,7 +36,7 @@ async function getPost(req, res, next) {
 };
 
 async function createPost(req, res, next) {
-    const authorId = req.validatedId;
+    const authorId = req.user.id;
 
     try {
         const { title, text } = req.body;
@@ -56,6 +57,12 @@ async function updatePost(req, res, next) {
 
         res.status(200).json(updatedPost);
     } catch(err) {
+        if (err.code === 'P2025') {
+            const error = new Error('Post Not Found');
+            error.status = 404;
+            return next(error);
+        };
+
         next(err);
     };
 };
@@ -68,6 +75,12 @@ async function deletePost(req, res, next) {
 
         res.sendStatus(204);
     } catch(err) {
+        if (err.code === 'P2025') {
+            const error = new Error('Post Not Found');
+            error.status = 404;
+            return next(error);
+        };
+
         next(err);
     };
 };

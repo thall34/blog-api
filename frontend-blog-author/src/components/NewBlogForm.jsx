@@ -33,7 +33,7 @@ function NewBlogForm() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`http://localhost:3000/api/posts/${user.id}`, {
+      const response = await fetch(`http://localhost:3000/api/posts/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
