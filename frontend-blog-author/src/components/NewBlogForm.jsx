@@ -73,6 +73,9 @@ function NewBlogForm() {
                     <input type="text" name='text' id='text' onChange={handleChange} required/>
                     <button type='submit'>Create Blog</button>
                 </form>
+                <Link to='/user/blogs'>
+                    <button>Go to Blogs</button>
+                </Link>
             </>
         ) : (
             <>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import getCurrentUser from '../api/getCurrentUser';
 
 function UpdateUserForm() {
@@ -73,6 +73,9 @@ function UpdateUserForm() {
                 <label htmlFor='password'>Password: </label>
                 <input type='password' name='password' id='password' value={userData.password} onChange={handleChange} placeholder='Leave this field blank to keep current password'/>
                 <button type='submit'>Submit Update</button>
+                <Link to='/user'>
+                    <button>Go to Blogs</button>
+                </Link>
             </form>
         </>
     )

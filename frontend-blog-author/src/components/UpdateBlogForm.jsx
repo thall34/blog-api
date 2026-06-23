@@ -103,6 +103,9 @@ function UpdateBlogForm() {
                     <input type="text" name='text' id='text' onChange={handleChange} value={blogData.text} required/>
                     <button type='submit'>Submit Update</button>
                 </form>
+                <Link to='/user/blogs'>
+                    <button>Go to Blogs</button>
+                </Link>
             </>
         ) : (
             <>

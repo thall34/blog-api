@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 function NewUserForm() {
     const [userData, setUserData] = useState({
@@ -58,6 +58,9 @@ function NewUserForm() {
                 <input type='password' name='password' id='password' value={userData.password} onChange={handleChange} required />
                 <button type='submit'>Log In</button>
             </form>
+            <Link to='/'>
+                    <button>Go to Homepage</button>
+                </Link>
         </>
     )
 }

@@ -95,6 +95,9 @@ function UpdateCommentForm() {
                     <input type="text" name='text' id='text' onChange={handleChange} value={commentData.text} required/>
                     <button type='submit'>Submit Edit</button>
                 </form>
+                <Link to='/user/blog/comments' state={{ blog: blog }}>
+                    <button>Go to Comments</button>
+                </Link>
             </>
         ) : (
             <>

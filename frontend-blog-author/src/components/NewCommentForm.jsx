@@ -67,6 +67,9 @@ function NewCommentForm() {
                     <input type="text" name='text' id='text' onChange={handleChange} required/>
                     <button type='submit'>Add Comment</button>
                 </form>
+                <Link to='/user/blog/comments' state={{ blog: blog }}>
+                    <button>Go to Comments</button>
+                </Link>
             </>
         ) : (
             <>
