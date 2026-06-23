@@ -5,32 +5,57 @@ import getCurrentUser from '../api/getCurrentUser';
 
 function App() {
   const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function checkAuthorization() {
-      const user = await getCurrentUser();
-      setUser(user);
+    async function initializePage() {
+      try {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      } catch (err) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    checkAuthorization();
+    initializePage();
   }, []);
+
+  if (loading) {
+    return (
+      <div>
+        <h1>Loading...</h1>
+      </div>
+    )
+  };
+
+  if (error) {
+    return (
+      <div>
+        <h1>{error.message}</h1>
+      </div>
+    )
+  };
+
+  if (user) {
+    return (
+      <div>
+        <h1>{user.username} successfully logged in!</h1>
+        <Link to='/user'>
+          <button>Go to User Dashboard</button>
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div>
-      {user ? (
-        <>
-          <h1>{user.username} successfully logged in!</h1>
-          <Link to='/user'>
-            <button>Go to User Dashboard</button>
-          </Link>
-        </> ) : (
-          <> 
-            <LoginForm setUser={setUser} />
-            <Link to='/user/new'>
-              <button>Register New User</button>
-            </Link>
-          </> 
-        )}
+      <LoginForm setUser={setUser} setError={setError} />
+      <Link to='/user/new'>
+        <button>Register New User</button>
+      </Link>
     </div>
   )
 }

@@ -1,7 +1,11 @@
-async function getCurrentUser() {
-    const token = localStorage.getItem('token');
+import getToken from "../utils/getToken";
 
-    if (!token) return;
+async function getCurrentUser() {
+    const token = getToken();
+
+    if (!token) {
+      return null;
+    }
 
     try {
       const response = await fetch(
@@ -16,12 +20,14 @@ async function getCurrentUser() {
       if (!response.ok) {
         localStorage.removeItem('token');
         return null;
-      }
+      };
 
-      return response.json();
+      // return response.json();
+      const user = await response.json();
+      return user;
     } catch (err) {
-      console.error(err);
-    }
+      return null;
+    };
   };
 
 export default getCurrentUser;
