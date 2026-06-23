@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, useLocation } from 'react-router';
 import getCurrentUser from '../api/getCurrentUser';
 
-function NewBlogForm() {
+function NewCommentForm() {
   const [user, setUser] = useState(null);
-  const [blogData, setBlogData] = useState({
-    title: '',
-    text: '',
-  });
+  const [commentData, setCommentData] = useState({ text: '' });
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const blog = location.state?.blog;
 
   useEffect(() => {
     async function checkAuthorization() {
@@ -22,7 +21,7 @@ function NewBlogForm() {
 
   const handleChange = (e) => {
         const { name, value } = e.target;
-        setBlogData((prevData) => ({
+        setCommentData((prevData) => ({
             ...prevData,
             [name]: value,
         }));
@@ -33,27 +32,24 @@ function NewBlogForm() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`http://localhost:3000/api/posts/${user.id}`, {
+      const response = await fetch(`http://localhost:3000/api/comments/${blog.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(blogData),
+        body: JSON.stringify(commentData),
       });
 
-      const post = await response.json();
+      const comment = await response.json();
 
       if (!response.ok) {
-        throw new Error('Blog Post Creation Failed');
+        throw new Error('Comment Creation Failed');
       }
 
-      setBlogData({
-        title: '',
-        text: '',
-      });
+      setCommentData({ text: '' });
 
-      navigate('/user/blogs')
+      navigate('/user/blog/comments', { state: { blog: blog }})
 
     //   return user;
     } catch(err) {
@@ -66,12 +62,10 @@ function NewBlogForm() {
         {user ? (
             <>
                 <form onSubmit={handleSubmit}>
-                    <h1>New Blog Post</h1>
-                    <label htmlFor='title'>Title: </label>
-                    <input type="text" name='title' id='title' onChange={handleChange} required/>
+                    <h1>New Comment</h1>
                     <label htmlFor='title'>Text: </label>
                     <input type="text" name='text' id='text' onChange={handleChange} required/>
-                    <button type='submit'>Create Blog</button>
+                    <button type='submit'>Add Comment</button>
                 </form>
             </>
         ) : (
@@ -86,4 +80,4 @@ function NewBlogForm() {
   )
 }
 
-export default NewBlogForm;
+export default NewCommentForm;

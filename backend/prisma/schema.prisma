@@ -27,7 +27,8 @@ model Post {
   authorId Int?
   title String @unique
   text String
-  timestamp DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
   user User? @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments Comment[]
 }
@@ -37,7 +38,8 @@ model Comment {
   authorId Int?
   postId Int?
   text String
-  timestamp DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
   user User? @relation(fields: [authorId], references: [id], onDelete: Cascade)
   post Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
 }

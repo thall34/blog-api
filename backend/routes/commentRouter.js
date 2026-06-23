@@ -2,12 +2,15 @@ const { Router } = require('express');
 const commentRouter = Router();
 
 const commentController = require('../controllers/commentController');
+const validateId = require('../middleware/validateId');
+const authenticateJWT = require('../middleware/authentication');
 
-commentRouter.get('/all', commentController.getAllComments);
-commentRouter.get('/:id', commentController.getComment);
 // id in this case is for the post
-commentRouter.post('/:id', commentController.createComment);
-commentRouter.put('/:id', commentController.updateComment);
-commentRouter.delete('/:id', commentController.deleteComment);
+commentRouter.get('/all/:id', authenticateJWT, validateId, commentController.getAllCommentsByBlogId);
+commentRouter.get('/:id', authenticateJWT, validateId, commentController.getComment);
+// id in this case is for the post
+commentRouter.post('/:id', authenticateJWT, validateId, commentController.createComment);
+commentRouter.put('/:id', authenticateJWT, validateId, commentController.updateComment);
+commentRouter.delete('/:id', authenticateJWT, validateId, commentController.deleteComment);
 
 module.exports = commentRouter;

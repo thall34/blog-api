@@ -53,7 +53,6 @@ async function updatePost(req, res, next) {
     try {
         const { title, text } = req.body;
         const updatedPost = await db.updatePostById(title, text, id);
-        console.log(updatedPost)
 
         res.status(200).json(updatedPost);
     } catch(err) {
@@ -67,7 +66,7 @@ async function deletePost(req, res, next) {
     try {
         const deletedPost = await db.deletePostById(id);
 
-        res.status(200).json(deletedPost);
+        res.sendStatus(204);
     } catch(err) {
         next(err);
     };

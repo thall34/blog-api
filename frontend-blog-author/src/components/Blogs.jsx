@@ -72,8 +72,6 @@ function Blogs() {
     getAllBlogs();
   }, []);
 
-  console.log(blogs)
-
   return (
     <div>
         {user ? (
@@ -84,11 +82,15 @@ function Blogs() {
                       <div key={blog.id}>
                        <h1>{blog.title}</h1>
                        <h3>Author: {blog.user.username}</h3>
+                       <p>Last Updated: {new Date(blog.updatedAt).toLocaleString()}</p>
                        <p>{blog.text}</p>
-                       <Link to='/blogs/update' state={{ blogId: blog.id }}>
+                       <Link to='/user/blogs/update' state={{ blogId: blog.id }}>
                           <button>Update Blog</button>
                        </Link>
                        <button onClick={() => deletePost(blog.id)}>Delete Blog</button>
+                       <Link to='/user/blog/comments' state={{ blog: blog }}>
+                        <button>View Comments</button>
+                       </Link>
                       </div>
                     ))}
                     </>
@@ -97,7 +99,7 @@ function Blogs() {
                         <h1>No Blogs Found</h1>
                     </>
                 )}
-                <Link to='/blogs/new'>
+                <Link to='/user/blogs/new'>
                     <button>Create New Blog Post</button>
                 </Link> 
                 <Link to='/user'>

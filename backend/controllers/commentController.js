@@ -1,8 +1,9 @@
 const db = require('../models/commentModels');
 
-async function getAllComments(req, res, next) {
+async function getAllCommentsByBlogId(req, res, next) {
+    const id = req.validatedId;
     try {
-        const comments = await db.getAllComments();
+        const comments = await db.getAllCommentsByBlogId(id);
 
         // if (!comments || comments.length === 0) {
         //     const error = new Error ('Failed to Fetch Comments');
@@ -36,7 +37,7 @@ async function getComment(req, res, next) {
 
 async function createComment(req, res, next) {
     const postId = req.validatedId;
-    const authorId = req.user.id
+    const authorId = req.user.id;
 
     try {
         const { text } = req.body;
@@ -67,14 +68,14 @@ async function deleteComment(req, res, next) {
     try {
         const deletedComment = await db.deleteCommentById(id);
 
-        res.status(200).json(deletedComment);
+        res.sendStatus(204);
     } catch(err) {
         next(err);
     };
 };
 
 module.exports = {
-    getAllComments,
+    getAllCommentsByBlogId,
     getComment,
     createComment,
     updateComment,

@@ -10,6 +10,7 @@ async function getAllPosts(id) {
                 }
             },
         },
+        orderBy: { updatedAt: 'asc' }
     });
 
     return posts;

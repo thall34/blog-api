@@ -2,16 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import getCurrentUser from '../api/getCurrentUser';
 
-function UpdateBlogForm() {
+function UpdateCommentForm() {
   const [user, setUser] = useState(null);
-  const [blogData, setBlogData] = useState({
-    title: '',
-    text: '',
-  });
+  const [commentData, setCommentData] = useState({ text: '' });
 
   const navigate = useNavigate();
   const location = useLocation();
-  const blogId = location.state?.blogId;
+  const commentId = location.state?.commentId;
+  const blog = location.state?.blog;
 
     useEffect(() => {
         async function checkAuthorization() {
@@ -24,7 +22,7 @@ function UpdateBlogForm() {
 
             if (!token) return;
             try {
-                const response = await fetch(`http://localhost:3000/api/posts/${blogId}`,
+                const response = await fetch(`http://localhost:3000/api/comments/${commentId}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -36,10 +34,9 @@ function UpdateBlogForm() {
                     return null;
                 };
 
-                const post = await response.json();
-                setBlogData({
-                    title: post.title,
-                    text: post.text,
+                const comment = await response.json();
+                setCommentData({
+                    text: comment.text,
                 });
             } catch (err) {
                 console.error(err);
@@ -52,7 +49,7 @@ function UpdateBlogForm() {
 
   const handleChange = (e) => {
         const { name, value } = e.target;
-        setBlogData((prevData) => ({
+        setCommentData((prevData) => ({
             ...prevData,
             [name]: value,
         }));
@@ -63,27 +60,24 @@ function UpdateBlogForm() {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`http://localhost:3000/api/posts/${blogId}`, {
+      const response = await fetch(`http://localhost:3000/api/comments/${commentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(blogData),
+        body: JSON.stringify(commentData),
       });
 
-      const post = await response.json();
+      const comment = await response.json();
 
       if (!response.ok) {
-        throw new Error('Blog Post Update Failed');
+        throw new Error('Comment Update Failed');
       }
 
-      setBlogData({
-        title: '',
-        text: '',
-      });
+      setCommentData({ text: '' });
 
-      navigate('/user/blogs')
+      navigate('/user/blog/comments', { state: { blog: blog }})
 
     //   return user;
     } catch(err) {
@@ -96,12 +90,10 @@ function UpdateBlogForm() {
         {user ? (
             <>
                 <form onSubmit={handleSubmit}>
-                    <h1>Update Blog Post</h1>
-                    <label htmlFor='title'>Title: </label>
-                    <input type="text" name='title' id='title' onChange={handleChange} value={blogData.title} required/>
+                    <h1>Edit Comment</h1>
                     <label htmlFor='text'>Text: </label>
-                    <input type="text" name='text' id='text' onChange={handleChange} value={blogData.text} required/>
-                    <button type='submit'>Submit Update</button>
+                    <input type="text" name='text' id='text' onChange={handleChange} value={commentData.text} required/>
+                    <button type='submit'>Submit Edit</button>
                 </form>
             </>
         ) : (
@@ -116,4 +108,4 @@ function UpdateBlogForm() {
   )
 }
 
-export default UpdateBlogForm;
+export default UpdateCommentForm;

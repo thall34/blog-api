@@ -60,7 +60,7 @@ function User() {
                     <button>Update User</button>
                 </Link>
                 <button onClick={deleteUser}>Delete User</button>
-                <Link to='/blogs'>
+                <Link to='/user/blogs'>
                     <button>Go to Blogs</button>
                 </Link>
             </>
