@@ -9,6 +9,7 @@ function Comments() {
     const [comments, setComments] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+    console.log(comments)
 
     const location = useLocation();
     const blog = location.state?.blog;

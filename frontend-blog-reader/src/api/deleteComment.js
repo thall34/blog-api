@@ -1,0 +1,31 @@
+import getToken from '../utils/getToken';
+
+async function deleteComment(commentId) {
+    console.log(commentId)
+    const token = getToken();
+
+    if (!token) {
+        return null;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/comments/${commentId}`,
+            {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            },
+        );
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return response;
+    } catch (err) {
+        return err;
+    }
+}
+
+export default deleteComment;
