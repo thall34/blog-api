@@ -22,7 +22,6 @@ async function getCurrentUser() {
         return null;
       };
 
-      // return response.json();
       const user = await response.json();
       return user;
     } catch (err) {

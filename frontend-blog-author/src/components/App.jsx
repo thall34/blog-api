@@ -35,6 +35,9 @@ function App() {
     return (
       <div>
         <h1>{error.message}</h1>
+        <Link to='/'>
+          <button onClick={() => setError(null)}>Back to Homepage</button>
+        </Link>
       </div>
     )
   };

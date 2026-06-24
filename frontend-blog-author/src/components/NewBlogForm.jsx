@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
 import getCurrentUser from '../api/getCurrentUser';
+import handleChange from '../utils/handleChange';
+import createBlog from '../api/createBlog';
 
 function NewBlogForm() {
   const [user, setUser] = useState(null);
@@ -8,85 +10,94 @@ function NewBlogForm() {
     title: '',
     text: '',
   });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function checkAuthorization() {
-        const user = await getCurrentUser();
-        setUser(user)
-    }
-
-    checkAuthorization();
-  }, []);
-
-  const handleChange = (e) => {
-        const { name, value } = e.target;
-        setBlogData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
-
-    const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`http://localhost:3000/api/posts/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(blogData),
-      });
+      const success = await createBlog();
 
-      const post = await response.json();
-
-      if (!response.ok) {
-        throw new Error('Blog Post Creation Failed');
-      }
+      if (!success) {
+        const error = new Error('Error Creating Post');
+        error.status = 400;
+        setError(error);
+      };
 
       setBlogData({
         title: '',
         text: '',
       });
 
-      navigate('/user/blogs')
-
-    //   return user;
-    } catch(err) {
-      console.error(err)
+      navigate('/user/blogs');
+    } catch (err) {
+      setError(err);
     };
+  };
+
+  useEffect(() => {
+    async function initializePage() {
+      try {
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      };
+    };
+
+    initializePage();
+  }, []);
+
+  if (loading) {
+    return (
+      <div>
+        <h1>Loading...</h1>
+      </div>
+    )
+  };
+
+  if (error) {
+    return (
+      <div>
+        <h1>{error.message}</h1>
+        <Link to='/user/blog'>
+          <button onClick={() => setError(null)}>Back to Blogs</button>
+        </Link>
+      </div>
+    )
+  };
+
+  if (user) {
+    return (
+      <div>
+        <form onSubmit={handleSubmit}>
+          <h1>New Blog Post</h1>
+          <label htmlFor='title'>Title: </label>
+          <input type="text" name='title' id='title' onChange={(e) => handleChange(e, setBlogData)} required />
+          <label htmlFor='title'>Text: </label>
+          <input type="text" name='text' id='text' onChange={(e) => handleChange(e, setBlogData)} required />
+          <button type='submit'>Create Blog</button>
+        </form>
+        <Link to='/user/blogs'>
+          <button>Go to Blogs</button>
+        </Link>
+      </div>
+    )
   };
 
   return (
     <div>
-        {user ? (
-            <>
-                <form onSubmit={handleSubmit}>
-                    <h1>New Blog Post</h1>
-                    <label htmlFor='title'>Title: </label>
-                    <input type="text" name='title' id='title' onChange={handleChange} required/>
-                    <label htmlFor='title'>Text: </label>
-                    <input type="text" name='text' id='text' onChange={handleChange} required/>
-                    <button type='submit'>Create Blog</button>
-                </form>
-                <Link to='/user/blogs'>
-                    <button>Go to Blogs</button>
-                </Link>
-            </>
-        ) : (
-            <>
-                <h1>Not Authenticated</h1>
-                <Link to='/'>
-                    <button>Go to Homepage</button>
-                </Link>
-            </>
-        )}
+      <h1>Not Authenticated</h1>
+      <Link to='/'>
+        <button>Go to Homepage</button>
+      </Link>
     </div>
   )
-}
+};
 
-export default NewBlogForm;
+  export default NewBlogForm;

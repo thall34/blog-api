@@ -17,11 +17,16 @@ function Comments() {
         try {
             const success = await deleteComment();
 
-            if (success) {
-                setComments((prevComments) => {
-                    return prevComments.filter((comment) => comment.id !== commentId)
-                });
+            if (!success) {
+                const error = new Error('Error Deleting Comment');
+                error.status = 404;
+                setError(error);
+                return;
             };
+
+            setComments((prevComments) => {
+                return prevComments.filter((comment) => comment.id !== commentId)
+            });
         } catch (err) {
             setError(err);
         };
@@ -56,6 +61,9 @@ function Comments() {
         return (
             <div>
                 <h1>{error.message}</h1>
+                <Link to='/user/blog/comments' state={{ blog: blog }}>
+                    <button onClick={() => setError(null)}>Back to Comments</button>
+                </Link>
             </div>
         )
     };

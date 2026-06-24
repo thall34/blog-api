@@ -10,7 +10,7 @@ userRouter.post('/login', userController.authenticateLogin);
 // userRouter.get('/all', userController.getAllUsers);
 userRouter.get('/:id', authenticateJWT, validateId, userController.getUserById);
 userRouter.post('/', userController.createUser);
-userRouter.put('/:id', validateId, userController.updateUser);
-userRouter.delete('/:id', validateId, userController.deleteUser);
+userRouter.put('/:id', authenticateJWT, validateId, userController.updateUser);
+userRouter.delete('/:id', authenticateJWT, validateId, userController.deleteUser);
 
 module.exports = userRouter;

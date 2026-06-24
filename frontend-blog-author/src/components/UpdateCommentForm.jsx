@@ -1,114 +1,112 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import getCurrentUser from '../api/getCurrentUser';
+import handleChange from '../utils/handleChange';
+import getComment from '../api/getComment';
+import updateComment from '../api/updateComment';
 
 function UpdateCommentForm() {
-  const [user, setUser] = useState(null);
-  const [commentData, setCommentData] = useState({ text: '' });
+    const [user, setUser] = useState(null);
+    const [commentData, setCommentData] = useState({ text: '' });
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  const navigate = useNavigate();
-  const location = useLocation();
-  const commentId = location.state?.commentId;
-  const blog = location.state?.blog;
+    const navigate = useNavigate();
+    const location = useLocation();
+    const commentId = location.state?.commentId;
+    const blog = location.state?.blog;
+
+    async function getCommentContents() {
+        try {
+            const comment = await getComment(commentId);
+            return comment;
+        } catch (err) {
+            setError(err);
+        };
+    };
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        try {
+            const success = await updateComment(commentId, commentData);
+
+            if (!success) {
+                const error = new Error('Error Updating Comment');
+                error.status = 400;
+                setError(error);
+            };
+
+            setCommentData({ text: '' });
+
+            navigate('/user/blog/comments', { state: { blog: blog } })
+        } catch (err) {
+            setError(err);
+        };
+    };
 
     useEffect(() => {
-        async function checkAuthorization() {
-            const user = await getCurrentUser();
-            setUser(user)
-        }
-
-        async function getPostContents() {
-            const token = localStorage.getItem('token');
-
-            if (!token) return;
+        async function initializePage() {
             try {
-                const response = await fetch(`http://localhost:3000/api/comments/${commentId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    },
-                );
-
-                if (!response.ok) {
-                    return null;
-                };
-
-                const comment = await response.json();
+                const currentUser = await getCurrentUser();
+                const currentComment = await getCommentContents();
+                setUser(currentUser);
                 setCommentData({
-                    text: comment.text,
+                    text: currentComment.text,
                 });
             } catch (err) {
-                console.error(err);
-            };
-        }
+                setError(err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        checkAuthorization();
-        getPostContents();
+        initializePage();
     }, []);
 
-  const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCommentData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
+    if (loading) {
+        return (
+            <div>
+                <h1>Loading...</h1>
+            </div>
+        )
     };
 
-    const handleSubmit = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await fetch(`http://localhost:3000/api/comments/${commentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(commentData),
-      });
-
-      const comment = await response.json();
-
-      if (!response.ok) {
-        throw new Error('Comment Update Failed');
-      }
-
-      setCommentData({ text: '' });
-
-      navigate('/user/blog/comments', { state: { blog: blog }})
-
-    //   return user;
-    } catch(err) {
-      console.error(err)
+    if (error) {
+        return (
+            <div>
+                <h1>{error.message}</h1>
+                <Link to='/user/blog/comments' state={{ blog: blog }}>
+                    <button onClick={() => setError(null)}>Back to Comments</button>
+                </Link>
+            </div>
+        )
     };
-  };
 
-  return (
-    <div>
-        {user ? (
-            <>
+    if (user) {
+        return (
+            <div>
                 <form onSubmit={handleSubmit}>
                     <h1>Edit Comment</h1>
                     <label htmlFor='text'>Text: </label>
-                    <input type="text" name='text' id='text' onChange={handleChange} value={commentData.text} required/>
+                    <input type="text" name='text' id='text' onChange={(e) => handleChange(e, setCommentData)} value={commentData.text} required />
                     <button type='submit'>Submit Edit</button>
                 </form>
                 <Link to='/user/blog/comments' state={{ blog: blog }}>
                     <button>Go to Comments</button>
                 </Link>
-            </>
-        ) : (
-            <>
-                <h1>Not Authenticated</h1>
-                <Link to='/'>
-                    <button>Go to Homepage</button>
-                </Link>
-            </>
-        )}
-    </div>
-  )
+            </div>
+        )
+    };
+
+    return (
+        <div>
+            <h1>Not Authenticated</h1>
+            <Link to='/'>
+                <button>Go to Homepage</button>
+            </Link>
+        </div>
+    )
 }
 
 export default UpdateCommentForm;

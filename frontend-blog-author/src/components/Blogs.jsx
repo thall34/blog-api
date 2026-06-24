@@ -14,11 +14,17 @@ function Blogs() {
     try {
       const success = await deletePost(postId);
 
-      if (success) {
-        setBlogs((prevBlogs) => {
-          return prevBlogs.filter((blog) => blog.id !== postId)
-        })
+      if (!success) {
+        const error = new Error('Error Deleting Post');
+        error.status = 404;
+        setError(error);
+        return; 
       }
+
+      setBlogs((prevBlogs) => {
+          return prevBlogs.filter((blog) => blog.id !== postId)
+      })
+
     } catch (err) {
       setError(err);
     }
@@ -53,6 +59,9 @@ function Blogs() {
     return (
       <div>
         <h1>{error.message}</h1>
+        <Link to='/user/blogs'>
+          <button onClick={() => setError(null)}>Back to Blogs</button>
+        </Link>
       </div>
     )
   };

@@ -1,122 +1,127 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import getCurrentUser from '../api/getCurrentUser';
+import handleChange from '../utils/handleChange';
+import updateBlog from '../api/updateBlog';
+import getPost from '../api/getPost';
 
 function UpdateBlogForm() {
-  const [user, setUser] = useState(null);
-  const [blogData, setBlogData] = useState({
-    title: '',
-    text: '',
-  });
-
-  const navigate = useNavigate();
-  const location = useLocation();
-  const blogId = location.state?.blogId;
-
-    useEffect(() => {
-        async function checkAuthorization() {
-            const user = await getCurrentUser();
-            setUser(user)
-        }
-
-        async function getPostContents() {
-            const token = localStorage.getItem('token');
-
-            if (!token) return;
-            try {
-                const response = await fetch(`http://localhost:3000/api/posts/${blogId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    },
-                );
-
-                if (!response.ok) {
-                    return null;
-                };
-
-                const post = await response.json();
-                setBlogData({
-                    title: post.title,
-                    text: post.text,
-                });
-            } catch (err) {
-                console.error(err);
-            };
-        }
-
-        checkAuthorization();
-        getPostContents();
-    }, []);
-
-  const handleChange = (e) => {
-        const { name, value } = e.target;
-        setBlogData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await fetch(`http://localhost:3000/api/posts/${blogId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(blogData),
-      });
-
-      const post = await response.json();
-
-      if (!response.ok) {
-        throw new Error('Blog Post Update Failed');
-      }
-
-      setBlogData({
+    const [user, setUser] = useState(null);
+    const [blogData, setBlogData] = useState({
         title: '',
         text: '',
-      });
+    });
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-      navigate('/user/blogs')
+    const navigate = useNavigate();
+    const location = useLocation();
+    const blogId = location.state?.blogId;
 
-    //   return user;
-    } catch(err) {
-      console.error(err)
+    async function getPostContents() {
+        try {
+            const post = await getPost(blogId);
+
+            if (!post) {
+                const error = new Error('Error Getting Post');
+                error.status = 400;
+                setError(error);
+            };
+
+            return post;
+        } catch (err) {
+            setError(err);
+        };
     };
-  };
 
-  return (
-    <div>
-        {user ? (
-            <>
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        try {
+            const success = await updateBlog();
+
+            if (!success) {
+                const error = new Error('Error Updating Blog');
+                error.status = 400;
+                setError(error);
+            };
+
+            setBlogData({
+                title: '',
+                text: '',
+            });
+
+            navigate('/user/blogs')
+        } catch (err) {
+            setError(err);
+        };
+    };
+
+    useEffect(() => {
+        async function initializePage() {
+            try {
+                const currentUser = await getCurrentUser();
+                const currentPost = await getPostContents();
+                setUser(currentUser);
+                setBlogData({
+                    title: currentPost.title,
+                    text: currentPost.text,
+                });
+            } catch (err) {
+                setError(err);
+            } finally {
+                setLoading(false);
+            };
+        };
+
+        initializePage();
+    }, []);
+
+    if (loading) {
+        return (
+            <div>
+                <h1>Loading...</h1>
+            </div>
+        )
+    };
+
+    if (error) {
+        return (
+            <div>
+                <h1>{error.message}</h1>
+                <Link to='/user/blogs'>
+                    <button onClick={() => setError(null)}>Back to Blogs</button>
+                </Link>
+            </div>
+        )
+    };
+
+    if (user) {
+        return (
+            <div>
                 <form onSubmit={handleSubmit}>
                     <h1>Update Blog Post</h1>
                     <label htmlFor='title'>Title: </label>
-                    <input type="text" name='title' id='title' onChange={handleChange} value={blogData.title} required/>
+                    <input type="text" name='title' id='title' onChange={(e) => handleChange(e, setBlogData)} value={blogData.title} required />
                     <label htmlFor='text'>Text: </label>
-                    <input type="text" name='text' id='text' onChange={handleChange} value={blogData.text} required/>
+                    <input type="text" name='text' id='text' onChange={(e) => handleChange(e, setBlogData)} value={blogData.text} required />
                     <button type='submit'>Submit Update</button>
                 </form>
                 <Link to='/user/blogs'>
                     <button>Go to Blogs</button>
                 </Link>
-            </>
-        ) : (
-            <>
-                <h1>Not Authenticated</h1>
-                <Link to='/'>
-                    <button>Go to Homepage</button>
-                </Link>
-            </>
-        )}
-    </div>
-  )
+            </div>
+        )
+    };
+
+    return (
+        <div>
+            <h1>Not Authenticated</h1>
+            <Link to='/'>
+                <button>Go to Homepage</button>
+            </Link>
+        </div>
+    )
 }
 
 export default UpdateBlogForm;

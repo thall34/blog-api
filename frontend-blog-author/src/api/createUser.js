@@ -1,6 +1,6 @@
-async function loginUser(userData) {
+async function createUser(userData) {
     try {
-        const response = await fetch('http://localhost:3000/api/users/login', {
+        const response = await fetch('http://localhost:3000/api/users/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -15,8 +15,8 @@ async function loginUser(userData) {
         const user = await response.json();
         return user;
     } catch (err) {
-        return err;
-    }
-}
+        return null;
+    };
+};
 
-export default loginUser;
+export default createUser;

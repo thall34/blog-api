@@ -1,84 +1,95 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router';
 import getCurrentUser from '../api/getCurrentUser';
+import handleChange from '../utils/handleChange';
+import createComment from '../api/createComment';
 
 function NewCommentForm() {
   const [user, setUser] = useState(null);
   const [commentData, setCommentData] = useState({ text: '' });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const location = useLocation();
   const blog = location.state?.blog;
 
-  useEffect(() => {
-    async function checkAuthorization() {
-        const user = await getCurrentUser();
-        setUser(user)
-    }
-
-    checkAuthorization();
-  }, []);
-
-  const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCommentData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
-
-    const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`http://localhost:3000/api/comments/${blog.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(commentData),
-      });
+      const success = await createComment(blog.id, commentData);
 
-      const comment = await response.json();
-
-      if (!response.ok) {
-        throw new Error('Comment Creation Failed');
-      }
+      if (!success) {
+        const error = new Error('Error Adding Comment');
+        error.status = 400;
+        setError(error);
+      };
 
       setCommentData({ text: '' });
 
-      navigate('/user/blog/comments', { state: { blog: blog }})
-
-    //   return user;
-    } catch(err) {
+      navigate('/user/blog/comments', { state: { blog: blog } })
+    } catch (err) {
       console.error(err)
     };
   };
 
+  useEffect(() => {
+    async function initializePage() {
+      try {
+        const currentUser = getCurrentUser();
+        setUser(currentUser);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      };
+    };
+
+    initializePage();
+  }, []);
+
+  if (loading) {
+    return (
+      <div>
+        <h1>Loading...</h1>
+      </div>
+    )
+  };
+
+  if (error) {
+    return (
+      <div>
+        <h1>{error.message}</h1>
+        <Link to='/user/blog/comments' state={{ blog: blog }}>
+          <button onClick={() => setError(null)}>Back to Comments</button>
+        </Link>
+      </div>
+    )
+  };
+
+  if (user) {
+    return (
+      <div>
+        <form onSubmit={handleSubmit}>
+          <h1>New Comment</h1>
+          <label htmlFor='title'>Text: </label>
+          <input type="text" name='text' id='text' onChange={(e) => handleChange(e, setCommentData)} required />
+          <button type='submit'>Add Comment</button>
+        </form>
+        <Link to='/user/blog/comments' state={{ blog: blog }}>
+          <button>Go to Comments</button>
+        </Link>
+      </div>
+    )
+  };
+
   return (
     <div>
-        {user ? (
-            <>
-                <form onSubmit={handleSubmit}>
-                    <h1>New Comment</h1>
-                    <label htmlFor='title'>Text: </label>
-                    <input type="text" name='text' id='text' onChange={handleChange} required/>
-                    <button type='submit'>Add Comment</button>
-                </form>
-                <Link to='/user/blog/comments' state={{ blog: blog }}>
-                    <button>Go to Comments</button>
-                </Link>
-            </>
-        ) : (
-            <>
-                <h1>Not Authenticated</h1>
-                <Link to='/'>
-                    <button>Go to Homepage</button>
-                </Link>
-            </>
-        )}
+      <h1>Not Authenticated</h1>
+      <Link to='/'>
+        <button>Go to Homepage</button>
+      </Link>
     </div>
   )
 }
